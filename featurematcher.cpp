@@ -2,25 +2,19 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <random>
+#include "DebugUtil.h"
 
 using namespace std;
 using namespace cv;
 
-int showit(int i){
-	return i+1;
-}
-int testload(){
-	Mat img_1 = imread ( "/home/aiways/workspace/slambook/ch7/1.png", CV_LOAD_IMAGE_COLOR );
-	namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
-	imshow( "Display window", img_1 );                   // Show our image inside it.
+DebugUtil g_dbg;
+void draw_matches(Mat img1, const std::vector<KeyPoint>& keypoints1,
+        Mat img2, const std::vector<KeyPoint>& keypoints2,
+        const std::vector<DMatch>& matches1to2, int n);
 
-	waitKey(0);
-	destroyWindow("Display window");
-	return 0;
-}
 int main ( int argc, char** argv )
 {
-//	int i = testload();
 	stringstream ss;
 	int j = 5;
 	Mat m =  Mat::eye(4, 4, CV_32F);
@@ -29,11 +23,12 @@ int main ( int argc, char** argv )
 
 	cout << "m = "<<ss.str() << endl;
 
-//	return 0;
 	//-- 读取图像
-	Mat img_1 = imread ( "/home/aiways/workspace/slambook/ch7/1.png", CV_LOAD_IMAGE_COLOR );
-	Mat img_2 = imread ( "/home/aiways/workspace/slambook/ch7/2.png", CV_LOAD_IMAGE_COLOR );
+	Mat img_1 = imread ( "/home/aiways/eclipse-workspace/featurematcher/imgs/000046_left.png", CV_LOAD_IMAGE_COLOR );
+	Mat img_2 = imread ( "/home/aiways/eclipse-workspace/featurematcher/imgs/000046_right.png", CV_LOAD_IMAGE_COLOR );
 
+//	g_dbg.matimg(img_1);
+//	return 0;
 	//-- 初始化
 	std::vector<KeyPoint> keypoints_1, keypoints_2;
 	Mat descriptors_1, descriptors_2;
@@ -53,8 +48,8 @@ int main ( int argc, char** argv )
 	descriptor->compute ( img_2, keypoints_2, descriptors_2 );
 
 	Mat outimg1;
-	drawKeypoints( img_1, keypoints_1, outimg1, Scalar::all(-1), DrawMatchesFlags::DEFAULT );
-	imshow("ORB特征点",outimg1);
+//	drawKeypoints( img_1, keypoints_1, outimg1, Scalar::all(-1), Scalar::all(-1),Scalar::all(-1),std::vector<char>(),DrawMatchesFlags::DEFAULT );
+//	imshow("ORB特征点",outimg1);
 
 	//-- 第三步:对两幅图像中的BRIEF描述子进行匹配，使用 Hamming 距离
 	vector<DMatch> matches;
@@ -66,12 +61,12 @@ int main ( int argc, char** argv )
 	double min_dist=10000, max_dist=0;
 
 	//找出所有匹配之间的最小距离和最大距离, 即是最相似的和最不相似的两组点之间的距离
-	for ( int i = 0; i < descriptors_1.rows; i++ )
-	{
-		double dist = matches[i].distance;
-		if ( dist < min_dist ) min_dist = dist;
-		if ( dist > max_dist ) max_dist = dist;
-	}
+//	for ( int i = 0; i < descriptors_1.rows; i++ )
+//	{
+//		double dist = matches[i].distance;
+//		if ( dist < min_dist ) min_dist = dist;
+//		if ( dist > max_dist ) max_dist = dist;
+//	}
 
 	// 仅供娱乐的写法
 	min_dist = min_element( matches.begin(), matches.end(), [](const DMatch& m1, const DMatch& m2) {return m1.distance<m2.distance;} )->distance;
@@ -82,27 +77,24 @@ int main ( int argc, char** argv )
 
 	//当描述子之间的距离大于两倍的最小距离时,即认为匹配有误.但有时候最小距离会非常小,设置一个经验值30作为下限.
 	std::vector< DMatch > good_matches;
-	int cnt = 0;
 	for ( int i = 0; i < descriptors_1.rows; i++ )
 	{
 		if ( matches[i].distance <= max ( 2*min_dist, 30.0 ) )
 		{
-			cnt++;
-			if(cnt%40 == 0){
-				good_matches.push_back ( matches[i] );
-			}
+			good_matches.push_back ( matches[i] );
 
 		}
 	}
-	cout<< "good match size = "<<cnt<<endl;
+//	g_dbg.draw_matches(img_1, keypoints_1, img_2, keypoints_2, good_matches, 1);
 	//-- 第五步:绘制匹配结果
-	Mat img_match;
-	Mat img_goodmatch;
-	drawMatches ( img_1, keypoints_1, img_2, keypoints_2, matches, img_match );
-	drawMatches ( img_1, keypoints_1, img_2, keypoints_2, good_matches, img_goodmatch );
-	imshow ( "所有匹配点对", img_match );
-	imshow ( "优化后匹配点对", img_goodmatch );
-	waitKey(0);
+//	Mat img_match;
+//	Mat img_goodmatch;
+//	drawMatches ( img_1, keypoints_1, img_2, keypoints_2, matches, img_match );
+//	drawMatches ( img_1, keypoints_1, img_2, keypoints_2, good_matches, img_goodmatch );
+//	imshow ( "所有匹配点对", img_match );
+//	imshow ( "优化后匹配点对", img_goodmatch );
+	cout<<"here we exit"<<endl;
 
 	return 0;
+
 }
