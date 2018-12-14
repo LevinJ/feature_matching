@@ -53,13 +53,15 @@ public:
 	std::string matrow(cv::Mat m, int n);
 	std::string matcol(cv::Mat m, int n);
 	std::string matele(cv::Mat mat, int row, int col);
+	template<typename T>
+	std::string vecstr(std::vector<T> v);
 	int m_update_key;
 protected:
 	std::string type2str(int type);
 	void matimg_internal(cv::Mat m, std::string text="", KeyHandler *p_key_handler= NULL);
 	std::vector<std::string> split_str(const std::string &s, char delim);
 	cv::Mat appendtext2img(cv::Mat img, std::string text);
-	std::vector< cv::DMatch > gen_rnd_matches(const std::vector< cv::DMatch > &matches, int n);
+	std::vector< cv::DMatch > gen_rnd_matches(const std::vector< cv::DMatch > &matches, int n, std::vector<int> &selected_inds);
 
 	float m_matimg_disp_ration;
 };

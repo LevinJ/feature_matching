@@ -47,19 +47,19 @@ static void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 	KeyHandler  *p_key_handler = (KeyHandler *)userdata;
 	if  ( event == EVENT_LBUTTONDOWN )
 	{
-		cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
+//		cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
 	}
 	else if  ( event == EVENT_RBUTTONDOWN )
 	{
-		cout << "Right button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
+//		cout << "Right button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
 	}
 	else if  ( event == EVENT_MBUTTONDOWN )
 	{
-		cout << "Middle button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
+//		cout << "Middle button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
 	}
 	else if ( event == EVENT_MOUSEMOVE )
 	{
-		cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
+//		cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
 		x = x / p_key_handler->m_resize_ratio;
 		y = y / p_key_handler->m_resize_ratio;
 		if(x>p_key_handler->m_original_single_img_width){
@@ -115,16 +115,17 @@ void DebugUtil::matimg(cv::Mat m, std::string text, KeyHandler  key_handler){
 	key_handler.m_original_single_img_width = m.cols;
 	matimg_internal(m, text, &key_handler);
 }
-std::vector< DMatch > DebugUtil::gen_rnd_matches(const std::vector< DMatch > &matches, int n){
+std::vector< DMatch > DebugUtil::gen_rnd_matches(const std::vector< DMatch > &matches, int n, std::vector<int> &selected_inds){
 	if(n==-1) return matches;
 	std::random_device rd;  //Will be used to obtain a seed for the random number engine
 	std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-	std::uniform_int_distribution<int> distribution(0,matches.size());
+	std::uniform_int_distribution<int> distribution(0,matches.size()-1);
 
 	std::vector< DMatch > res;
 	for(int i=0; i<n; i++){
 		int ind = distribution(gen);
 		res.push_back(matches[ind]);
+		selected_inds.push_back(ind);
 	}
 	return res;
 }
@@ -166,12 +167,26 @@ cv::Mat DebugUtil::appendtext2img(cv::Mat m, std::string text){
 	vconcat(outImg,blank_area,res_img);
 	return res_img;
 }
+template<typename T>
+std::string DebugUtil::vecstr(std::vector<T> v){
+	std::stringstream ss;
+	ss<<"[";
+	for(size_t i = 0; i < v.size(); ++i)
+	{
+		if(i != 0)
+			ss << ",";
+		ss << v[i];
+	}
+	ss<<"]";
+	return ss.str();
+}
 MatchImageAndDisciption DebugUtil::generate_match_img(cv::Mat img1, const std::vector<cv::KeyPoint>& keypoints1,
 		cv::Mat img2, const std::vector<cv::KeyPoint>& keypoints2,
 		const std::vector<cv::DMatch>& matches1to2, int n){
 	Mat img_match;
 	std::vector< DMatch > rnd_matches;
-	rnd_matches = gen_rnd_matches(matches1to2, n);
+	std::vector<int> selected_inds;
+	rnd_matches = gen_rnd_matches(matches1to2, n, selected_inds);
 	drawMatches ( img1, keypoints1, img2, keypoints2, rnd_matches, img_match,
 			Scalar::all(-1),Scalar::all(-1),std::vector<char>(),DrawMatchesFlags::DEFAULT| DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
@@ -190,6 +205,7 @@ MatchImageAndDisciption DebugUtil::generate_match_img(cv::Mat img1, const std::v
 		ss<<"\nd="<<match.distance<<endl;
 
 	}
+	ss<<"matched pnts="<<matches1to2.size()<<", current pnts="<<vecstr<int>(selected_inds)<<endl;
 	cout<<ss.str()<<endl;
 	MatchImageAndDisciption res;
 	res.m_img = img_match;
