@@ -48,8 +48,14 @@ public:
 	MatchImageAndDisciption generate_match_img(cv::Mat img1, const std::vector<cv::KeyPoint>& keypoints1,
 					cv::Mat img2, const std::vector<cv::KeyPoint>& keypoints2,
 					const std::vector<cv::DMatch>& matches1to2, int n);
+	std::string mattype(cv::Mat m);
+	std::string matstr(cv::Mat m);
+	std::string matrow(cv::Mat m, int n);
+	std::string matcol(cv::Mat m, int n);
+	std::string matele(cv::Mat mat, int row, int col);
 	int m_update_key;
 protected:
+	std::string type2str(int type);
 	void matimg_internal(cv::Mat m, std::string text="", KeyHandler *p_key_handler= NULL);
 	std::vector<std::string> split_str(const std::string &s, char delim);
 	cv::Mat appendtext2img(cv::Mat img, std::string text);
