@@ -145,13 +145,17 @@ cv::Mat DebugUtil::appendtext2img(cv::Mat m, std::string text){
 	//draw the blank area with text lines
 	int height = outImg.rows;
 	int width = outImg.cols;
-	Mat blank_area = Mat::zeros(height/2, width, outImg.type());
+	vector<string> text_lines;
+	text_lines = split_str(text, '\n');
+	int blank_height = (text_lines.size() + 2) * 30;
+	Mat blank_area = Mat::zeros(blank_height, width, outImg.type());
+
 	if(text!=""){
 		int y0 = 30;
 		int dy = 30;
 		int i = 0;
 
-		for(auto &text_line: split_str(text, '\n')){
+		for(auto &text_line: text_lines){
 			int y = y0 + i*dy;
 			cv::putText(blank_area, text_line, cv::Point(5,y), cv::FONT_HERSHEY_COMPLEX_SMALL, 1, cv::Scalar(0,255,0), 1);
 			i++;
