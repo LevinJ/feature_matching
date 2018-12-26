@@ -37,49 +37,62 @@ public:
 		}
 	};
 };
+
+void DebugUtil::matimgs(cv::Mat m){
+	return matimg(m);
+}
 DebugUtil::DebugUtil() {
 	// TODO Auto-generated constructor stub
 	m_matimg_disp_ration = 0.6;
 	m_update_key = 1048693;
+	m_matched_point_depth = NULL;
 }
 static void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 {
 	KeyHandler  *p_key_handler = (KeyHandler *)userdata;
 	if  ( event == EVENT_LBUTTONDOWN )
 	{
-//		cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
+		//		cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
 	}
 	else if  ( event == EVENT_RBUTTONDOWN )
 	{
-//		cout << "Right button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
+		//		cout << "Right button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
 	}
 	else if  ( event == EVENT_MBUTTONDOWN )
 	{
-//		cout << "Middle button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
+		//		cout << "Middle button of the mouse is clicked - position (" << x << ", " << y << ")" << endl;
 	}
 	else if ( event == EVENT_MOUSEMOVE )
 	{
-//		cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
 		x = x / p_key_handler->m_resize_ratio;
 		y = y / p_key_handler->m_resize_ratio;
 		if(x>p_key_handler->m_original_single_img_width){
 			x = x - p_key_handler->m_original_single_img_width;
 		}
-
 		stringstream ss;
 		ss<<"mouse pos x="<<x<<",y="<<y<<endl;
 		p_key_handler->m_mouse_pos = ss.str();
+		//		cout << "Mouse move over the window - position (" << x << ", " << y << ")" << endl;
 
 	}
 }
-void DebugUtil::matimg_internal(cv::Mat m, std::string text, KeyHandler *p_key_handler){
+void DebugUtil::matimg_internal(cv::Mat m, std::string text, KeyHandler *p_key_handler, std::string title){
+	if(m.channels() == 1){
+		cv::Mat temp;
+		cv::cvtColor(m, temp,cv::COLOR_GRAY2BGR);
+		m = temp;
+	}
+
 	KeyHandler &key_handler = *p_key_handler;
 	string win_name =  "AIWAYS SLAM Image Viewer";
+
 	namedWindow( win_name, WINDOW_AUTOSIZE );// Create a window for display.
 	key_handler.m_img = m;
 	key_handler.m_text = text;
+
 	//set the callback function for any mouse event
 	setMouseCallback(win_name, CallBackFunc, (void *)&key_handler);
+
 	while(true){
 		Mat res_img;
 		key_handler.m_img.copyTo(res_img);
@@ -94,8 +107,12 @@ void DebugUtil::matimg_internal(cv::Mat m, std::string text, KeyHandler *p_key_h
 		if(desciption_text != ""){
 			res_img = appendtext2img(res_img, desciption_text);
 		}
+		if(title != ""){
+			res_img = prependtext2img(res_img, title);
+		}
 		imshow(win_name, res_img );
-		int key = cv::waitKey(1);
+		int key = cv::waitKey(10);
+
 		if(key == -1) {
 			//proceed with next loop as no key is pressed.
 			continue;
@@ -109,6 +126,9 @@ void DebugUtil::matimg_internal(cv::Mat m, std::string text, KeyHandler *p_key_h
 
 	cout<<"done with image showing"<<endl;
 	destroyWindow(win_name);
+	for(int i=0; i< 6;i++){
+		cv::waitKey(1);
+	}
 	return;
 }
 void DebugUtil::matimg(cv::Mat m, std::string text, KeyHandler  key_handler){
@@ -140,6 +160,12 @@ std::vector<std::string> DebugUtil::split_str(const std::string &s, char delim) 
 	return elems;
 }
 cv::Mat DebugUtil::appendtext2img(cv::Mat m, std::string text){
+	return addtext2img(m, text, true);
+}
+cv::Mat DebugUtil::prependtext2img(cv::Mat m, std::string text){
+	return addtext2img(m, text, false);
+}
+cv::Mat DebugUtil::addtext2img(cv::Mat m, std::string text, bool append){
 	Mat outImg;
 	m.copyTo(outImg);
 
@@ -148,11 +174,11 @@ cv::Mat DebugUtil::appendtext2img(cv::Mat m, std::string text){
 	int width = outImg.cols;
 	vector<string> text_lines;
 	text_lines = split_str(text, '\n');
-	int blank_height = (text_lines.size() + 2) * 30;
+	int blank_height = (text_lines.size() + 1) * 30;
 	Mat blank_area = Mat::zeros(blank_height, width, outImg.type());
 
 	if(text!=""){
-		int y0 = 30;
+		int y0 = 25;
 		int dy = 30;
 		int i = 0;
 
@@ -164,9 +190,14 @@ cv::Mat DebugUtil::appendtext2img(cv::Mat m, std::string text){
 	}
 	//do the concatenation
 	Mat res_img;
-	vconcat(outImg,blank_area,res_img);
+	if(append){
+		vconcat(outImg,blank_area,res_img);
+	}else{
+		vconcat(blank_area, outImg,res_img);
+	}
 	return res_img;
 }
+
 template<typename T>
 std::string DebugUtil::vecstr(std::vector<T> v){
 	std::stringstream ss;
@@ -180,6 +211,30 @@ std::string DebugUtil::vecstr(std::vector<T> v){
 	ss<<"]";
 	return ss.str();
 }
+static cv::Mat drawMatches_1( Mat img1, const std::vector<KeyPoint>& keypoints1,
+		Mat img2, const std::vector<KeyPoint>& keypoints2,
+		const std::vector<DMatch>& matches1to2){
+	Mat res_img;
+	RNG& rng = theRNG();
+	const int draw_shift_bits = 4;
+	const int draw_multiplier = 1 << draw_shift_bits;
+	hconcat(img1,img2, res_img);
+	for(const auto &m: matches1to2){
+		Scalar color = Scalar( rng(256), rng(256), rng(256), 255 );
+
+		Point2f pt1 = keypoints1[m.queryIdx].pt;
+		Point2f pt2 = keypoints2[m.trainIdx].pt;
+		Point2f dpt2 = Point2f(pt2.x+img1.cols , pt2.y );
+
+		cv::line( res_img,
+				Point(cvRound(pt1.x*draw_multiplier), cvRound(pt1.y*draw_multiplier)),
+				Point(cvRound(dpt2.x*draw_multiplier), cvRound(dpt2.y*draw_multiplier)),
+				color, 3, LINE_AA, draw_shift_bits );
+	}
+
+	return res_img;
+
+}
 MatchImageAndDisciption DebugUtil::generate_match_img(cv::Mat img1, const std::vector<cv::KeyPoint>& keypoints1,
 		cv::Mat img2, const std::vector<cv::KeyPoint>& keypoints2,
 		const std::vector<cv::DMatch>& matches1to2, int n){
@@ -187,8 +242,7 @@ MatchImageAndDisciption DebugUtil::generate_match_img(cv::Mat img1, const std::v
 	std::vector< DMatch > rnd_matches;
 	std::vector<int> selected_inds;
 	rnd_matches = gen_rnd_matches(matches1to2, n, selected_inds);
-	drawMatches ( img1, keypoints1, img2, keypoints2, rnd_matches, img_match,
-			Scalar::all(-1),Scalar::all(-1),std::vector<char>(),DrawMatchesFlags::DEFAULT| DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+	img_match = drawMatches_1 ( img1, keypoints1, img2, keypoints2, rnd_matches);
 
 	//string to describe the rnd matches
 	stringstream ss;
@@ -202,10 +256,18 @@ MatchImageAndDisciption DebugUtil::generate_match_img(cv::Mat img1, const std::v
 		ss<<",size="<<keypoints2[match.trainIdx].size<<",angle="<<keypoints2[match.trainIdx].angle<<",response="<<keypoints2[match.trainIdx].response;
 
 		//distance
-		ss<<"\nd="<<match.distance<<endl;
-
+		ss<<"\nd="<<match.distance;
+		//depth if such information exists
+		if(m_matched_point_depth){
+			float depth = (*m_matched_point_depth)[match.queryIdx];
+			ss<<", depth="<<depth;
+			ss<<", x="<<(keypoints1[match.queryIdx].pt.x - m_cx) * depth/m_fx;
+			ss<<", y="<<(keypoints1[match.queryIdx].pt.y - m_cy) * depth/m_fy;
+		}
+		ss<<endl;
 	}
 	ss<<"matched pnts="<<matches1to2.size()<<", current pnts="<<vecstr<int>(selected_inds)<<endl;
+
 	cout<<ss.str()<<endl;
 	MatchImageAndDisciption res;
 	res.m_img = img_match;
@@ -215,11 +277,47 @@ MatchImageAndDisciption DebugUtil::generate_match_img(cv::Mat img1, const std::v
 }
 void DebugUtil::draw_matches(Mat img1, const std::vector<KeyPoint>& keypoints1,
 		Mat img2, const std::vector<KeyPoint>& keypoints2,
-		const std::vector<DMatch>& matches1to2, int n){
+		const std::vector<DMatch>& matches1to2, int n, std::string title){
 	FeatureMatchUpdater fmu(img1, keypoints1,img2, keypoints2,matches1to2, n,this);
 	fmu.m_original_single_img_width = img1.cols;
 	fmu.update_img(m_update_key);
-	matimg_internal(fmu.m_img, fmu.m_text, &fmu);
+	matimg_internal(fmu.m_img, fmu.m_text, &fmu,title);
+}
+void DebugUtil::draw_matches(cv::Mat img1, const std::vector<cv::KeyPoint>& keypoints1,
+		cv::Mat img2, const std::vector<cv::KeyPoint>& keypoints2,
+		const std::map<int, cv::DMatch> &matches1to2, int n, std::string title){
+	vector<cv::DMatch> matches;
+	for(auto const &item : matches1to2){
+		matches.push_back(item.second);
+	}
+	draw_matches(img1, keypoints1,img2, keypoints2,matches, n,title);
+
+}
+
+void DebugUtil::draw_matches(std::string img1, const std::vector<cv::KeyPoint>& keypoints1,
+		std::string img2, const std::vector<cv::KeyPoint>& keypoints2,
+		const std::map<int, cv::DMatch> &matches1to2, int n){
+	std::string title =  "                              " +
+			split_str(img1, '/').back() + ",                                 " +
+			split_str(img2, '/').back() ;
+	draw_matches_internal(img1, keypoints1,img2,keypoints2,matches1to2,n, title );
+
+}
+void DebugUtil::draw_matches_internal(std::string img1, const std::vector<cv::KeyPoint>& keypoints1,
+		std::string img2, const std::vector<cv::KeyPoint>& keypoints2,
+		const std::map<int, cv::DMatch> &matches1to2, int n, std::string title){
+	cv::Mat img1_temp = cv::imread(img1, CV_LOAD_IMAGE_COLOR);
+	cv::Mat img2_temp = cv::imread(img2, CV_LOAD_IMAGE_COLOR);
+
+	draw_matches(img1_temp, keypoints1,img2_temp, keypoints2,matches1to2, n,title);
+
+}
+void DebugUtil::draw_matches_internal(std::string img1, const std::vector<cv::KeyPoint>& keypoints1,
+		std::string img2, const std::vector<cv::KeyPoint>& keypoints2,
+		const std::vector<cv::DMatch> &matches1to2, int n, std::string title){
+	cv::Mat img1_temp = cv::imread(img1, CV_LOAD_IMAGE_COLOR);
+	cv::Mat img2_temp = cv::imread(img2, CV_LOAD_IMAGE_COLOR);
+	draw_matches(img1_temp, keypoints1,img2_temp, keypoints2,matches1to2, n,title);
 
 }
 DebugUtil::~DebugUtil() {
@@ -285,4 +383,6 @@ std::string DebugUtil::matele(cv::Mat mat, int row, int col){
 	}
 	return ss.str();
 }
+
+DebugUtil g_dbg;
 

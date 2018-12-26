@@ -8,7 +8,6 @@
 using namespace std;
 using namespace cv;
 
-DebugUtil g_dbg;
 void draw_matches(Mat img1, const std::vector<KeyPoint>& keypoints1,
         Mat img2, const std::vector<KeyPoint>& keypoints2,
         const std::vector<DMatch>& matches1to2, int n);
