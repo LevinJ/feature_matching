@@ -34,12 +34,12 @@ void FeatureMatchUtil::basicmatching(Mat img_1, Mat img_2){
 		//    Ptr<DescriptorMatcher> matcher  = DescriptorMatcher::create ( "FlannBased" );
 		//    FlannBasedMatcher *matcher = new FlannBasedMatcher();
 		//-- 第一步:检测 Oriented FAST 角点位置
-		detector->detect ( img_1,keypoints_1 );
-		detector->detect ( img_2,keypoints_2 );
+		detector->detect ( img_1,m_keypoints_1 );
+		detector->detect ( img_2,m_keypoints_2 );
 
 		//-- 第二步:根据角点位置计算 BRIEF 描述子
-		descriptor->compute ( img_1, keypoints_1, descriptors_1 );
-		descriptor->compute ( img_2, keypoints_2, descriptors_2 );
+		descriptor->compute ( img_1, m_keypoints_1, descriptors_1 );
+		descriptor->compute ( img_2, m_keypoints_2, descriptors_2 );
 
 		Mat outimg1;
 		//	drawKeypoints( img_1, keypoints_1, outimg1, Scalar::all(-1), Scalar::all(-1),Scalar::all(-1),std::vector<char>(),DrawMatchesFlags::DEFAULT );
@@ -75,9 +75,43 @@ void FeatureMatchUtil::basicmatching(Mat img_1, Mat img_2){
 		{
 			if ( matches[i].distance <= max ( 2*min_dist, 30.0 ) )
 			{
-				matches1to2.push_back ( matches[i] );
+				m_matches1to2.push_back ( matches[i] );
 
 			}
 		}
+}
+
+void FeatureMatchUtil::manual_matching(Mat img_1, Mat img_2){
+	vector<vector<float>> matches;
+//	matches.push_back({251,310,176,310});
+//	matches.push_back({949,49,890,49});
+//	matches.push_back({509,108,481,108});
+//	matches.push_back({517,71,489,71});
+
+
+	//for windows front
+	matches.push_back({748,190,738,190});
+
+	//test for windows front
+//	matches.push_back({748,190,726,190});
+
+
+	//test for window left side
+//	matches.push_back({509,108,479,108});
+
+	int id = 0;
+	for(const auto &m: matches){
+		float x1,y1,x2,y2;
+		x1 = m[0];
+		y1 = m[1];
+		x2 = m[2];
+		y2 = m[3];
+		m_keypoints_1.push_back(KeyPoint(x1,y1,-1));
+		m_keypoints_2.push_back(KeyPoint(x2,y2,-1));
+		m_matches1to2.push_back(DMatch(id, id, 0,0));
+		id++;
+	}
+
+
 }
 

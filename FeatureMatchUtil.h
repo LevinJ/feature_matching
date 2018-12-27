@@ -16,10 +16,11 @@
 class FeatureMatchUtil {
 public:
 	FeatureMatchUtil();
+	void manual_matching(cv::Mat img_1, cv::Mat img_2);
 	void basicmatching(cv::Mat img_1, cv::Mat img_2);
 	virtual ~FeatureMatchUtil();
-	std::vector<cv::KeyPoint> keypoints_1, keypoints_2;
-	std::vector< cv::DMatch > matches1to2;
+	std::vector<cv::KeyPoint> m_keypoints_1, m_keypoints_2;
+	std::vector< cv::DMatch > m_matches1to2;
 };
 
 #endif /* FEATUREMATCHUTIL_H_ */

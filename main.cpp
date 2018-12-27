@@ -20,10 +20,11 @@ int main ( int argc, char** argv )
 	Mat img_2 = imread (img_2_str, CV_LOAD_IMAGE_COLOR );
 
 	FeatureMatchUtil matcher = FeatureMatchUtil();
-	matcher.basicmatching(img_1, img_2);
-	std::vector<cv::KeyPoint> keypoints_1 = matcher.keypoints_1;
-	std::vector<cv::KeyPoint> keypoints_2 = matcher.keypoints_2;
-	std::vector< cv::DMatch > matches1to2 = matcher.matches1to2;
+//	matcher.basicmatching(img_1, img_2);
+	matcher.manual_matching(img_1, img_2);
+	std::vector<cv::KeyPoint> keypoints_1 = matcher.m_keypoints_1;
+	std::vector<cv::KeyPoint> keypoints_2 = matcher.m_keypoints_2;
+	std::vector< cv::DMatch > matches1to2 = matcher.m_matches1to2;
 
 	cout<<"debug here"<<endl;
 	g_orbdbg.m_cx = 632.9208;
@@ -40,7 +41,7 @@ int main ( int argc, char** argv )
 		float z = g_orbdbg.m_b * g_orbdbg.m_fx/d;
 		matched_point_depth[m.queryIdx] = z;
 	}
-	g_orbdbg.dbgstereomatches(img_1_str, keypoints_1, img_2_str, keypoints_2, matches1to2, 1, &matched_point_depth);
+	g_orbdbg.dbgstereomatches(img_1_str, keypoints_1, img_2_str, keypoints_2, matches1to2, -1, &matched_point_depth);
 
 
 	return 0;

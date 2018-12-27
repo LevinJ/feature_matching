@@ -28,6 +28,7 @@ public:
 		m_mouse_pos = "";
 		m_resize_ratio = 1.0;
 		m_original_single_img_width = 0;
+		m_title_area_height = 0;
 	}
 	virtual void update_img(int key){
 	};
@@ -35,6 +36,7 @@ public:
 	std::string m_mouse_pos;
 	float m_resize_ratio;
 	int m_original_single_img_width;
+	int m_title_area_height;
 };
 
 class DebugUtil {

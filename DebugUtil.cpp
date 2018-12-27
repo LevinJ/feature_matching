@@ -64,11 +64,13 @@ static void CallBackFunc(int event, int x, int y, int flags, void* userdata)
 	}
 	else if ( event == EVENT_MOUSEMOVE )
 	{
+		y = y - p_key_handler->m_title_area_height;
 		x = x / p_key_handler->m_resize_ratio;
 		y = y / p_key_handler->m_resize_ratio;
 		if(x>p_key_handler->m_original_single_img_width){
 			x = x - p_key_handler->m_original_single_img_width;
 		}
+
 		stringstream ss;
 		ss<<"mouse pos x="<<x<<",y="<<y<<endl;
 		p_key_handler->m_mouse_pos = ss.str();
@@ -107,8 +109,11 @@ void DebugUtil::matimg_internal(cv::Mat m, std::string text, KeyHandler *p_key_h
 		if(desciption_text != ""){
 			res_img = appendtext2img(res_img, desciption_text);
 		}
+		key_handler.m_title_area_height = 0;
 		if(title != ""){
+			key_handler.m_title_area_height = res_img.rows;
 			res_img = prependtext2img(res_img, title);
+			key_handler.m_title_area_height = res_img.rows - key_handler.m_title_area_height;
 		}
 		imshow(win_name, res_img );
 		int key = cv::waitKey(10);
