@@ -11,8 +11,11 @@ from pythonscripts.exercise.display_image import DisplayImg
 
 class CheckStereoRectify(object):
     def __init__(self):
-        self.img_1_str = '/home/aiways/workspace/dataset/camera_calibration/zk_snapshot/1229/backup/777036_left.jpg'
-        self.img_2_str = '/home/aiways/workspace/dataset/camera_calibration/zk_snapshot/1229/backup/777036_right.jpg' 
+#         self.img_1_str = '/home/aiways/workspace/dataset/camera_calibration/zk_snapshot/1229/backup/777036_left.jpg'
+#         self.img_2_str = '/home/aiways/workspace/dataset/camera_calibration/zk_snapshot/1229/backup/777036_right.jpg' 
+        
+        self.img_1_str = '/home/aiways/workspace/dataset/camera_calibration/zk_snapshot/1229/backup/1046000_left.jpg'
+        self.img_2_str = '/home/aiways/workspace/dataset/camera_calibration/zk_snapshot/1229/backup/1046000_right.jpg' 
         self.img_1_pnt = (0,200)
         self.img_2_pnt = (1280,200)
        
