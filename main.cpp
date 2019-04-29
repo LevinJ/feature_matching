@@ -9,6 +9,7 @@
 
 using namespace std;
 using namespace cv;
+int test_pagolin(cv::Mat &img);
 
 int main ( int argc, char** argv )
 {
@@ -45,20 +46,21 @@ int main ( int argc, char** argv )
 	for(const auto &m: matches1to2){
 		matches1to2map[m.queryIdx] = m;
 	}
-
+	matcher.m_matches1to2map = matches1to2map;
+	matcher.m_img1 = img_1_str;
+	matcher.m_img2  = img_2_str;
 //	MatchImageAndDisciption res = matcher.generate_matching_result(img_1_str, keypoints_1,
 //			img_2_str, keypoints_2,
 //			matches1to2map);
-	Mat res = matcher.generate_matching_result2(img_1_str, keypoints_1,
-				img_2_str, keypoints_2,
-				matches1to2map);
+	MatchImageAndDisciption res = matcher.generate_matching_result();
+	Mat res_img = matcher.generate_img_texts(res.m_img, res.m_title, res.m_text);
 	namedWindow("Display window", WINDOW_AUTOSIZE);
 
-	 imshow("Display window", res);
+	 imshow("Display window", res_img);
 	 waitKey(0);
 //	g_orbdbg.dbgstereomatches(img_1_str, keypoints_1, img_2_str, keypoints_2, matches1to2, -1, &matched_point_depth);
 
-
+//	test_pagolin(res);
 	return 0;
 
 }

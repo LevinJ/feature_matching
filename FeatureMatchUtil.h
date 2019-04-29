@@ -21,15 +21,15 @@ public:
 	void basicmatching(cv::Mat img_1, cv::Mat img_2);
 	virtual ~FeatureMatchUtil();
 	std::vector<cv::KeyPoint> m_keypoints_1, m_keypoints_2;
-	std::vector< cv::DMatch > m_matches1to2;
+	std::vector< cv::DMatch > m_matches1to2;//this one is obsolete
+	std::string m_img1;
+	std::string m_img2;
+	std::map<int, cv::DMatch> m_matches1to2map;
 
 	//return the matching image, title,and description
-	MatchImageAndDisciption generate_matching_result(std::string img1, const std::vector<cv::KeyPoint>& keypoints1,
-			std::string img2, const std::vector<cv::KeyPoint>& keypoints2,
-			const std::map<int, cv::DMatch> &matches1to2, int n=3);
-	cv::Mat generate_matching_result2(std::string img1, const std::vector<cv::KeyPoint>& keypoints1,
-				std::string img2, const std::vector<cv::KeyPoint>& keypoints2,
-				const std::map<int, cv::DMatch> &matches1to2, int n=3);
+	MatchImageAndDisciption generate_matching_result(int n=3);
+	cv::Mat generate_img_texts(cv::Mat &img,  std::string title, std::string text);
+	void clear_cache();
 
 
 };

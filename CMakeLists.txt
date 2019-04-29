@@ -5,7 +5,12 @@ set(CMAKE_BUILD_TYPE Debug)
 
 
 find_package( OpenCV REQUIRED )
+find_package(Pangolin REQUIRED)
 
-add_executable(main main.cpp  FeatureMatchUtil.cpp DebugUtil.cpp OrbDebugUtil.cpp)
+include_directories(
+${Pangolin_INCLUDE_DIRS}
+)
 
-target_link_libraries(main ${OpenCV_LIBS} )
+add_executable(main main.cpp  FeatureMatchUtil.cpp DebugUtil.cpp OrbDebugUtil.cpp testPagolin.cpp)
+
+target_link_libraries(main ${OpenCV_LIBS} ${Pangolin_LIBRARIES})
