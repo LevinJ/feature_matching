@@ -14,14 +14,14 @@ int main ( int argc, char** argv )
 {
 
 	//-- 读取图像
-	std::string img_1_str = "/home/aiways/eclipse-workspace/featurematcher/imgs/000046_left.png";
-	std::string img_2_str =  "/home/aiways/eclipse-workspace/featurematcher/imgs/000046_right.png";
+	std::string img_1_str = "/home/levin/workspace/featurematcher/imgs/000046_left.png";
+	std::string img_2_str =  "/home/levin/workspace/featurematcher/imgs/000046_right.png";
 	Mat img_1 = imread ( img_1_str, CV_LOAD_IMAGE_COLOR );
 	Mat img_2 = imread (img_2_str, CV_LOAD_IMAGE_COLOR );
 
 	FeatureMatchUtil matcher = FeatureMatchUtil();
-//	matcher.basicmatching(img_1, img_2);
-	matcher.manual_matching(img_1, img_2);
+	matcher.basicmatching(img_1, img_2);
+//	matcher.manual_matching(img_1, img_2);
 	std::vector<cv::KeyPoint> keypoints_1 = matcher.m_keypoints_1;
 	std::vector<cv::KeyPoint> keypoints_2 = matcher.m_keypoints_2;
 	std::vector< cv::DMatch > matches1to2 = matcher.m_matches1to2;
