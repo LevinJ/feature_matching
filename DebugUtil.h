@@ -20,6 +20,7 @@ class MatchImageAndDisciption{
 public:
 	cv::Mat m_img;
 	std::string m_text;
+	std::string m_title;
 };
 
 class KeyHandler: public  MatchImageAndDisciption{

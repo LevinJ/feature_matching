@@ -34,14 +34,29 @@ int main ( int argc, char** argv )
 	g_orbdbg.m_b = 0.12;
 	std::vector<float> matched_point_depth(keypoints_1.size(), -1);
 
+//	for(const auto &m: matches1to2){
+//		float ul = keypoints_1[m.queryIdx].pt.x;
+//		float ur = keypoints_2[m.trainIdx].pt.x;
+//		float d = ul - ur;
+//		float z = g_orbdbg.m_b * g_orbdbg.m_fx/d;
+//		matched_point_depth[m.queryIdx] = z;
+//	}
+	std::map<int, cv::DMatch> matches1to2map;
 	for(const auto &m: matches1to2){
-		float ul = keypoints_1[m.queryIdx].pt.x;
-		float ur = keypoints_2[m.trainIdx].pt.x;
-		float d = ul - ur;
-		float z = g_orbdbg.m_b * g_orbdbg.m_fx/d;
-		matched_point_depth[m.queryIdx] = z;
+		matches1to2map[m.queryIdx] = m;
 	}
-	g_orbdbg.dbgstereomatches(img_1_str, keypoints_1, img_2_str, keypoints_2, matches1to2, -1, &matched_point_depth);
+
+//	MatchImageAndDisciption res = matcher.generate_matching_result(img_1_str, keypoints_1,
+//			img_2_str, keypoints_2,
+//			matches1to2map);
+	Mat res = matcher.generate_matching_result2(img_1_str, keypoints_1,
+				img_2_str, keypoints_2,
+				matches1to2map);
+	namedWindow("Display window", WINDOW_AUTOSIZE);
+
+	 imshow("Display window", res);
+	 waitKey(0);
+//	g_orbdbg.dbgstereomatches(img_1_str, keypoints_1, img_2_str, keypoints_2, matches1to2, -1, &matched_point_depth);
 
 
 	return 0;

@@ -115,3 +115,36 @@ void FeatureMatchUtil::manual_matching(Mat img_1, Mat img_2){
 
 }
 
+MatchImageAndDisciption FeatureMatchUtil::generate_matching_result(std::string img1, const std::vector<cv::KeyPoint>& keypoints1,
+			std::string img2, const std::vector<cv::KeyPoint>& keypoints2,
+			const std::map<int, cv::DMatch> &matches1to2, int n){
+
+	std::string title =  "                              " +
+				split_str(img1, '/').back() + ",                                 " +
+				split_str(img2, '/').back() ;
+	cv::Mat img1_temp = cv::imread(img1, CV_LOAD_IMAGE_COLOR);
+	cv::Mat img2_temp = cv::imread(img2, CV_LOAD_IMAGE_COLOR);
+	vector<cv::DMatch> matches;
+	for(auto const &item : matches1to2){
+		matches.push_back(item.second);
+	}
+	MatchImageAndDisciption res = generate_match_img(img1_temp, keypoints1,img2_temp, keypoints2,matches, n);
+	res.m_title = title;
+	return res;
+}
+
+Mat FeatureMatchUtil::generate_matching_result2(std::string img1, const std::vector<cv::KeyPoint>& keypoints1,
+			std::string img2, const std::vector<cv::KeyPoint>& keypoints2,
+			const std::map<int, cv::DMatch> &matches1to2, int n){
+
+	MatchImageAndDisciption res = generate_matching_result(img1, keypoints1,
+			 img2,  keypoints2,
+			matches1to2, n);
+
+	cv::resize(res.m_img, res.m_img, cv::Size(), m_matimg_disp_ration, m_matimg_disp_ration);
+	res.m_img = addtext2img(res.m_img, res.m_title, false);
+	res.m_img = addtext2img(res.m_img, res.m_text, true);
+
+	return res.m_img;
+}
+
